@@ -1,5 +1,7 @@
 import time
 import datetime
+import requests
+import json
 
 # ASCII based GUI related imports
 import curses
@@ -26,19 +28,20 @@ For additonal details read the README.md
 #####   Web Scraping Component of the Program #####
 ###################################################
 
-#def web_scrape():
+# Instantiating Firefox browser for webscraping
 options = Options()
 options.headless = True
 url = "https://tryhackme.com/p/Blackwolf"
 service = Service("/home/blackwolf/scripts/github/SpartanStudy/geckodriver")
 browser = webdriver.Firefox(options=options, service=service)
 browser.get(url)
-#    return browser
 
-# Fetching appropriate data for logging
 def rank_fetch():
     return int(browser.find_element(By.ID, "user-rank").text)
     
+def totalUsers():
+    return json.loads(requests.get("https://tryhackme.com/api/site-stats").text).get("totalUsers")
+
 def user_stats():
     user_stats = {
         "username": browser.find_element(By.CLASS_NAME, "level").text,
@@ -49,17 +52,20 @@ def user_stats():
     }
     return user_stats 
 
+
 ###################################
 #####   Logic for the program #####
 ###################################
 
+def rank_percentile():
+    return round(rank_fetch() / totalUsers() * 100, 2)
 
 # Reading score before writing (to prevent duplicates)
 def last_score_stored():
     with open("score_log.csv", "r") as file:
         lines = file.read().splitlines()
-        rank_saved = int(list(lines[-1].split(" "))[0])
-    return int(rank_saved) 
+        rank_saved = list(lines[-1].split(" "))[0]
+    return int(rank_saved)
 
 def update():
     browser.refresh()
@@ -71,7 +77,7 @@ def update():
         #browser.refresh()
 
 # daily score increase tracker
-def daily_ladder(parameter):
+def daily_ladder():
     daily_increase = 0
     todays_score = 0
     
@@ -92,19 +98,13 @@ def daily_ladder(parameter):
             
             # Records difference in rank for todays date occurences
             elif dateVal == str(datetime.date.today()):
-                daily_increase = todays_score - int(scoreVal)
-
-            else:
-                todays_score = last_score_stored()
+                daily_increase = int(todays_score) - int(scoreVal)
 
    # Returning difference in score from first val of todays work
-    if parameter == "daily":
-        if(daily_increase > 0):
-            return "+" + str(daily_increase)
-        else:
-            return daily_increase
-    elif parameter == "starting":
-        return todays_score
+    if(daily_increase > 0):
+        return "+" + str(daily_increase)
+    else:
+        return daily_increase
 
 ################################################################################
 ####    This section is for the ASCII based GUI component of the program    ####
@@ -125,8 +125,8 @@ def draw_frame(win):
 
 def top_text(top_win):
     top_win.clear()
-    top_win.addstr(0, 1, f"Date: {datetime.date.today()}")
-    top_win.addstr(0, 30, f"User: xxxx")
+    top_win.addstr("Welcome to TryHackMe Tracker!")
+    top_win.addstr(0, 40, f"Date: {datetime.date.today()}")
     top_win.refresh()
 
 def profile(profile_win):
@@ -134,9 +134,9 @@ def profile(profile_win):
     profile_win.addstr(f"User: {user_stats().get('username')},  Lvl {user_stats().get('level')}")
     profile_win.addstr(1, 0, "--------------------------")
     profile_win.addstr(2, 0, f"Global Rank: {user_stats().get('rank')}")
-    profile_win.addstr(3, 0, f"Rooms Completed: {user_stats().get('rooms')}")
-    profile_win.addstr(4, 0, f"Badges: {user_stats().get('badges')}")
-    profile_win.addstr(9, 40, f"{daily_ladder('starting')} --> {last_score_stored()}")
+    profile_win.addstr(3, 0, f"Placed in Top {rank_percentile()}%")
+    profile_win.addstr(4, 0, f"Rooms Completed: {user_stats().get('rooms')}")
+    profile_win.addstr(5, 0, f"Badges: {user_stats().get('badges')}")  
     profile_win.refresh()
 
 
@@ -160,7 +160,7 @@ def updater(win, ladder_win, profile_win):
 
 def ladder(win):
     win.clear()
-    win.addstr(f"Daily Ladder: {daily_ladder('daily')}")
+    win.addstr(f"Daily Ladder: {daily_ladder()}")
     win.refresh()
 
 def main(screen):
