@@ -1,17 +1,15 @@
 import time
+import json 
 import datetime
 import requests
-import json
+import threading
+import concurrent.futures
 
 # ASCII based GUI related imports
 import curses
+import pyfiglet
 from curses import wrapper
-
-# Selenium related imports
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.firefox.options import Options
+from pyfiglet import figlet_format
 
 """ 
 Project SpartanStudy
@@ -20,43 +18,66 @@ Started: [10/2/2022]
 This project was developed by Kirwin Webb
 
 For additonal details read the README.md
+
+
+
+To Do:
+    - Threading
+        * API calls will benefit from the use of hyper-threading
+        * Need to use threading for update timer and pomo clock to run 
+          concurrently, won't work without hyper-threading.
+
+    - Need to create and implement the pomodoro study technique timer
+    - Figure out how to fetch user-streak, no API for that.
+
+    - Replace selenium webscrape using TryHackMe's APIs instead [DONE]
+        * This did result in some loss in functionality
+            * No API for userLevel, User-Streak
+            * API for badges is weird, will need to work on it
+        * user stats data can be fetched through THM's API
+        * Will make time taken for script to start much shorter (Hopefully)
+            * Cut down start-up time from 5s to <1s
+            * Only issue is that only the skeleton and top windows display 
+              immidately, the user-stats window loads after 3s
+
 """
 
 
 
-###################################################
-#####   Web Scraping Component of the Program #####
-###################################################
+####################################################
+######## Change this to your own username!! ########
+####################################################
 
-# Instantiating Firefox browser for webscraping
-options = Options()
-options.headless = True
-url = "https://tryhackme.com/p/Blackwolf"
-service = Service("/home/blackwolf/scripts/github/SpartanStudy/geckodriver")
-browser = webdriver.Firefox(options=options, service=service)
-browser.get(url)
+
+# This is case sensitive
+Username = "Blackwolf"
+
+
+
+#####################################################
+#####   Data fetching component of the program  #####
+#####################################################
 
 def rank_fetch():
-    return int(browser.find_element(By.ID, "user-rank").text)
-    
+    return json.loads(requests.get("https://tryhackme.com/api/user/rank/" + Username).text).get("userRank") 
 def totalUsers():
     return json.loads(requests.get("https://tryhackme.com/api/site-stats").text).get("totalUsers")
 
 def user_stats():
     user_stats = {
-        "username": browser.find_element(By.CLASS_NAME, "level").text,
-        "level": browser.find_element(By.XPATH, "/html/body/div[3]/div[2]/div/div/div[3]/div[1]").text,
-        "rooms": browser.find_element(By.ID, "rooms-completed").text,
-        "badges": browser.find_element(By.ID, "badge-count").text,
-        "rank": browser.find_element(By.ID, "user-rank").text,
+        "username": Username,
+        "rooms":  json.loads(requests.get("https://tryhackme.com/api/no-completed-rooms-public/" + Username).text),
+        "badges": json.loads(requests.get("https://tryhackme.com/api/badges/get/" + Username).text),
     }
-    return user_stats 
-
+    return user_stats
 
 ###################################
 #####   Logic for the program #####
 ###################################
 
+
+
+        
 def rank_percentile():
     return round(rank_fetch() / totalUsers() * 100, 2)
 
@@ -68,13 +89,11 @@ def last_score_stored():
     return int(rank_saved)
 
 def update():
-    browser.refresh()
     if(last_score_stored != rank_fetch()):
         with open("score_log.csv", "a") as file:
             position_difference = last_score_stored() - rank_fetch()
             file.write(str(rank_fetch()) + " " + str(datetime.date.today()))
             file.write("\n")
-        #browser.refresh()
 
 # daily score increase tracker
 def daily_ladder():
@@ -110,6 +129,17 @@ def daily_ladder():
 ####    This section is for the ASCII based GUI component of the program    ####
 ################################################################################
 
+##### This is the logic for the clock
+def timer(clock_win):
+    count = 1500
+    while True:
+        mins, secs = divmod(count, 60)
+        clock_win.clear()
+        clock_win.addstr(pyfiglet.figlet_format(f"{mins} : {secs}", font = "small"))
+        clock_win.refresh()
+        count -= 1
+        time.sleep(1)
+
 def draw_frame(win):
     win.clear()
     for x in range(60):
@@ -125,20 +155,21 @@ def draw_frame(win):
 
 def top_text(top_win):
     top_win.clear()
-    top_win.addstr("Welcome to TryHackMe Tracker!")
+    top_win.addstr(0, 1, "SpartanStudy v1.17")
     top_win.addstr(0, 40, f"Date: {datetime.date.today()}")
     top_win.refresh()
 
 def profile(profile_win):
     profile_win.clear()
-    profile_win.addstr(f"User: {user_stats().get('username')},  Lvl {user_stats().get('level')}")
-    profile_win.addstr(1, 0, "--------------------------")
-    profile_win.addstr(2, 0, f"Global Rank: {user_stats().get('rank')}")
+    profile_win.addstr(f"User: {user_stats().get('username')}")
+    profile_win.addstr(1, 0, "-----------------------")
+    profile_win.addstr(2, 0, f"Global Rank: {rank_fetch()}")
     profile_win.addstr(3, 0, f"Placed in Top {rank_percentile()}%")
     profile_win.addstr(4, 0, f"Rooms Completed: {user_stats().get('rooms')}")
-    profile_win.addstr(5, 0, f"Badges: {user_stats().get('badges')}")  
+   # profile_win.addstr(5, 0, f"Badges: {user_stats().get('badges')}") 
+    for y in range(5):
+        profile_win.addstr(y, 22, "|")
     profile_win.refresh()
-
 
 def updater(win, ladder_win, profile_win):
     while True:
@@ -170,14 +201,26 @@ def main(screen):
     skeleton_frame = curses.newwin(16, 70, 0, 0)
     top_win = curses.newwin(1, 58, 1, 1)
     updating_win = curses.newwin(1, 17, 14, 2)
+    pomodoro_clock = curses.newwin(6, 30, 3, 30)
 
-    # Calling Functions to draw frame and text, has to be top to bottom
-    draw_frame(skeleton_frame)
-    top_text(top_win)
-    profile(profile_win)
-    ladder(ladder_win)
-    updater(updating_win, ladder_win, profile_win)
+    # Calling Functions to draw frame and text
+    # Hyper threading
+    skeleton_thread = threading.Thread(target = draw_frame, args = [skeleton_frame])
+    topText_thread = threading.Thread(target = top_text, args = [top_win])
+    profile_thread = threading.Thread(target = profile, args = [profile_win])
+    ladder_thread = threading.Thread(target = ladder, args = [ladder_win])
+    
+    skeleton_thread.start()
+    topText_thread.start()
+    profile_thread.start()
+    ladder_thread.start()
 
+    # Clocks/Timers
+    updater_thread = threading.Thread(target = updater, args=[updating_win, ladder_win, profile_win])
+    pomodoroClock_thread = threading.Thread(target = timer, args=[pomodoro_clock])
+    pomodoroClock_thread.start()
+    updater_thread.start()
+    
     # Need this so program doesn't end abruptly
     top_win.getch()
     profile_win.getch()
