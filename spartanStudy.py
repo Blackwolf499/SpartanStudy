@@ -75,14 +75,24 @@ def user_stats():
 ###################################
         
 def rank_percentile():
-    return round(rank_fetch() / totalUsers() * 100, 2)
+    return rank_fetch() / totalUsers() * 100
 
 # Reading score before writing (to prevent duplicates)
 def last_score_stored():
     with open("score_log.csv", "r") as file:
         lines = file.read().splitlines()
-        rank_saved = list(lines[-1].split(" "))[0]
-    return int(rank_saved)
+        return int(list(lines[-1].split(" "))[0])
+
+def daily_percentile():
+    with open("score_log.csv", "r") as file:
+        lines = file.read().splitlines()
+    
+        for line in lines:
+            dateVal = line.split(" ")[1]
+            scoreVal = line.split(" ")[0]
+
+            if dateVal == str(datetime.date.today()):
+                return int(scoreVal) / totalUsers() * 100 - rank_percentile()
 
 def update():
     if(last_score_stored != rank_fetch()):
@@ -160,9 +170,10 @@ def profile(profile_win):
     profile_win.addstr(f"User: {user_stats().get('username')}")
     profile_win.addstr(1, 0, "-----------------------")
     profile_win.addstr(2, 0, f"Global Rank: {rank_fetch()}")
-    profile_win.addstr(3, 0, f"Placed in Top {rank_percentile()}%")
+    profile_win.addstr(3, 0, f"Placed in Top {round(rank_percentile(), 2)}%")
     profile_win.addstr(4, 0, f"Rooms Completed: {user_stats().get('rooms')}")
-   
+    #profile_win.addstr(5, 0, f"Increased by {daily_percentile()}")
+
     for y in range(5):
         profile_win.addstr(y, 22, "|")
     profile_win.refresh()
@@ -187,6 +198,7 @@ def updater(win, ladder_win, profile_win):
 
 def ladder(win):
     win.clear()
+    #win.addstr(f"Daily {round(daily_percentile(), 4)}")
     win.addstr(f"Daily Ladder: {daily_ladder()}")
     win.refresh()
 
