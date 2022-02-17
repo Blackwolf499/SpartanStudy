@@ -95,7 +95,7 @@ def daily_percentile():
                 return int(scoreVal) / totalUsers() * 100 - rank_percentile()
 
 def update():
-    if(last_score_stored != rank_fetch()):
+    if(last_score_stored() != rank_fetch()):
         with open("score_log.csv", "a") as file:
             position_difference = last_score_stored() - rank_fetch()
             file.write(str(rank_fetch()) + " " + str(datetime.date.today()))
