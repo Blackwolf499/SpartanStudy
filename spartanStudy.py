@@ -222,7 +222,7 @@ def clock_options_draw(clock_menu, current_row_idx):
         else:
             clock_menu.addstr(0, x, f"[{row}]")
         options_length -= len(row) +5
-    clock_menu.addstr(0, 36, "|")
+    clock_menu.addstr(0, 46, "|")
     clock_menu.refresh()
 
 
@@ -262,14 +262,14 @@ def main(screen):
     current_row_idx = 0
 
     # Initialising windows
-    ladder_win = curses.newwin(1, 21, 14, 39)
-    profile_win = curses.newwin(10, 58, 3, 2)
+    ladder_win = curses.newwin(1, 21, 11, 2)
+    profile_win = curses.newwin(6, 58, 3, 2)
     skeleton_frame = curses.newwin(16, 70, 0, 0)
     top_win = curses.newwin(1, 58, 1, 1)
-    updating_win = curses.newwin(1, 17, 14, 2)
+    updating_win = curses.newwin(1, 17, 12, 2)
     pomodoro_clock = curses.newwin(6, 30, 3, 30)
 
-    clock_menu = curses.newwin(1, 64, 12, 27)
+    clock_menu = curses.newwin(1, 64, 14, 17)
     clock_menu.keypad(1) 
     
     draw_frame(skeleton_frame)
