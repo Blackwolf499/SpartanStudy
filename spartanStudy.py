@@ -148,7 +148,7 @@ def timer(clock_win):
 
 def draw_frame(win):
     win.clear()
-    for x in range(60):
+    for x in range(63):
         win.addstr(0, x, "=")
         win.addstr(2, x, "=")
         win.addstr(13, x, "=")
@@ -156,7 +156,7 @@ def draw_frame(win):
     
     for y in range(15):
         win.addstr(y, 0, "|")
-        win.addstr(y, 60, "|")
+        win.addstr(y, 63, "|")
     win.refresh()
 
 def top_text(top_win):
@@ -202,9 +202,64 @@ def ladder(win):
     win.addstr(f"Daily Ladder: {daily_ladder()}")
     win.refresh()
 
+def clock_options_draw(clock_menu, current_row_idx):
+    clock_menu.clear()
+    h, w = clock_menu.getmaxyx()
+    
+    options_length = 0
+    for option in menu:
+        options_length += len(option) +5
+
+    for idx, row in enumerate(menu):
+        x = w//2 - options_length
+        y = h//2
+
+        if idx == current_row_idx:
+            clock_menu.attron(curses.color_pair(1))
+            clock_menu.addstr(0, x, f"[ {row} ]")
+            clock_menu.attroff(curses.color_pair(1))
+        
+        else:
+            clock_menu.addstr(0, x, f"[{row}]")
+        options_length -= len(row) +5
+    clock_menu.addstr(0, 36, "|")
+    clock_menu.refresh()
+
+
+def clock_menu_keys(clock_menu, current_row_idx):
+    clock_options_draw(clock_menu, current_row_idx)
+
+    while True:
+        key = clock_menu.getch()
+        clock_menu.clear()
+
+        if key == curses.KEY_RIGHT and current_row_idx < len(menu)-1:
+            current_row_idx += 1
+
+        elif key == curses.KEY_LEFT and current_row_idx > 0:
+            current_row_idx -= 1
+
+        elif key == curses.KEY_ENTER or key in [10, 13]:
+            clock_menu.addstr(0, 0, f"You pressed {menu[current_row_idx]}") 
+            clock_menu.refresh()
+            clock_menu.getch()
+
+        clock_options_draw(clock_menu, current_row_idx)
+        clock_menu.refresh()
+
+
+
+menu = ["Start", "Pause", "Restart"]
 def main(screen):
     # Disables cursor
     curses.curs_set(0)
+
+    # Colours
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
+   # Clock Menu options
+   #menu = ["Start", "Pause", "Restart"]
+    current_row_idx = 0
 
     # Initialising windows
     ladder_win = curses.newwin(1, 21, 14, 39)
@@ -213,22 +268,27 @@ def main(screen):
     top_win = curses.newwin(1, 58, 1, 1)
     updating_win = curses.newwin(1, 17, 14, 2)
     pomodoro_clock = curses.newwin(6, 30, 3, 30)
+
+    clock_menu = curses.newwin(1, 64, 12, 27)
+    clock_menu.keypad(1) 
     
+    draw_frame(skeleton_frame)
+    top_text(top_win)
+
     # Hyper threading
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(draw_frame, skeleton_frame)
-        executor.submit(top_text, top_win)
         executor.submit(profile, profile_win)
         executor.submit(ladder, ladder_win)
         executor.submit(timer, pomodoro_clock)
         executor.submit(updater, updating_win, ladder_win, profile_win)
-
+        executor.submit(clock_menu_keys, clock_menu, current_row_idx)
+    clock_menu_keys(clock_menu, current_row_idx)
     # Need this so program doesn't end abruptly
-    top_win.getch()
-    profile_win.getch()
-    screen.getch()
-    updating.getch()
-
+    #top_win.getch()
+    #profile_win.getch()
+    #screen.getch()
+    #updating.getch()
+    #clock_menu.getch()
 wrapper(main)
 
 
