@@ -209,9 +209,11 @@ def clock_options_draw(clock_menu, current_row_idx):
     options_length = 0
     for option in menu:
         options_length += len(option) +5
-
-    for idx, row in enumerate(menu):
-        x = w//2 - options_length
+    
+    counter = 1
+    x = 7
+    for idx, row in enumerate(menu):  
+        clock_menu.addstr(0, 62, "|")   
         y = h//2
 
         if idx == current_row_idx:
@@ -221,8 +223,10 @@ def clock_options_draw(clock_menu, current_row_idx):
         
         else:
             clock_menu.addstr(0, x, f"[{row}]")
+        counter += 1
+        x += 20
         options_length -= len(row) +5
-    clock_menu.addstr(0, 46, "|")
+
     clock_menu.refresh()
 
 
@@ -269,7 +273,7 @@ def main(screen):
     updating_win = curses.newwin(1, 17, 10, 2)
     pomodoro_clock = curses.newwin(6, 30, 3, 30)
 
-    clock_menu = curses.newwin(1, 64, 14, 17)
+    clock_menu = curses.newwin(1, 67, 14, 1)
     clock_menu.keypad(1) 
     
     draw_frame(skeleton_frame)
