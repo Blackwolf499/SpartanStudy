@@ -198,8 +198,8 @@ def updater(win, ladder_win, profile_win):
 
 def ladder(win):
     win.clear()
-    #win.addstr(f"Daily {round(daily_percentile(), 4)}")
-    win.addstr(f"Daily Ladder: {daily_ladder()}")
+    win.addstr(0, 0, f"Daily Ladder: {daily_ladder()}")
+    win.addstr(1, 0, f"Percentile change {round(daily_percentile(), 4)}%")
     win.refresh()
 
 def clock_options_draw(clock_menu, current_row_idx):
@@ -262,11 +262,11 @@ def main(screen):
     current_row_idx = 0
 
     # Initialising windows
-    ladder_win = curses.newwin(1, 21, 11, 2)
+    ladder_win = curses.newwin(2, 30, 11, 2)
     profile_win = curses.newwin(6, 58, 3, 2)
     skeleton_frame = curses.newwin(16, 70, 0, 0)
     top_win = curses.newwin(1, 58, 1, 1)
-    updating_win = curses.newwin(1, 17, 12, 2)
+    updating_win = curses.newwin(1, 17, 10, 2)
     pomodoro_clock = curses.newwin(6, 30, 3, 30)
 
     clock_menu = curses.newwin(1, 64, 14, 17)
