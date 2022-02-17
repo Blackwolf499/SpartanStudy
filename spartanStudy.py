@@ -161,7 +161,7 @@ def draw_frame(win):
 
 def top_text(top_win):
     top_win.clear()
-    top_win.addstr(0, 1, "SpartanStudy v1.17")
+    top_win.addstr(0, 1, "SpartanStudy v1.18")
     top_win.addstr(0, 40, f"Date: {datetime.date.today()}")
     top_win.refresh()
 
