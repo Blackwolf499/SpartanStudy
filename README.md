@@ -1,7 +1,8 @@
 # SpartanStudy
-SpartanStudy, is a small tool designed to monitor, track, and log your progress on TryHackMe.com
-Typically it should be run as you're working on TryHackMe so you're able to study accordingly and
-can see how you progress in real-time. 
+
+SpartanStudy, a text-based application running on BSD UNIX library, Curses, SpartanStudy monitors, tracks, 
+and logs your progress on TryHackMe. This application was developed to resemble an "old-school" application, 
+in which the graphical-display is entirely ascii-text based. 
 
 ![image](https://user-images.githubusercontent.com/33044535/155277641-5ed12ecd-6260-408b-aaa7-ccf8f8a6366b.png)
 
@@ -11,13 +12,9 @@ Current Functionality:
 - Rooms Completed
 - Daily Ladder
 - Percentile Change. 
-
 - Count Down clock [25 minutes]
 - Menu Items to Start, Pause, Restart.
 
-SpartanStudy, a text-based application is displayed exclusively using Curses. 
-Curses was a library developed for BSD UNIX. I wanted to create a tool that felt like
-and resembled an "old-school" application, in which it was entirely text-based. 
 
 It updates and logs your global positional ranking every 60 seconds by accessing an API that
 TryHackMe hadn't secured properly (many of their APIs have access control enabled). 
