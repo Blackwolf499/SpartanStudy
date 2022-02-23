@@ -2,7 +2,7 @@
 
 SpartanStudy, a text-based application running on BSD UNIX library, Curses, SpartanStudy monitors, tracks, 
 and logs your progress on TryHackMe. This application was developed to resemble an "old-school" application, 
-in which the graphical-display is entirely ascii-text based. 
+in which the graphics is entirely text based. 
 
 ![image](https://user-images.githubusercontent.com/33044535/155277641-5ed12ecd-6260-408b-aaa7-ccf8f8a6366b.png)
 
