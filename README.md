@@ -5,7 +5,7 @@ TryHackMe hadn't secured properly. It monitors daily increase of rank, as-well a
 your change in global rank expressed as a percentage, so you can see how many people you've surpassed
 in a days work. 
 
-![image](https://user-images.githubusercontent.com/33044535/155277480-06c13ffa-5e78-4cd1-8df8-4a3edb2d731a.png)
+![image](https://user-images.githubusercontent.com/33044535/155277641-5ed12ecd-6260-408b-aaa7-ccf8f8a6366b.png)
 
 Initially the SpartanStudy tool fetched data through web-scraping
 but after discovering numerous APIs were accessible I had then decided to take advantage of that.
