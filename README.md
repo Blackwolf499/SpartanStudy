@@ -16,8 +16,7 @@ Current Functionality:
 - Menu Items to Start, Pause, Restart.
 
 
-It updates and logs your global positional ranking every 60 seconds by accessing an API that
-TryHackMe hadn't secured properly (many of their APIs have access control enabled). 
+It updates and logs your global positional ranking every 60 seconds by utulising TryHackMe undocumented API's. 
 It monitors daily increase of rank, as-well as displaying your change in global rank expressed as a percentage,
 so you can see how many people you've surpassed in a days work. 
 
