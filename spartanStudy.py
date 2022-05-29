@@ -38,7 +38,7 @@ To Do:
         * Will make time taken for script to start much shorter (Hopefully)
             * Cut down start-up time from 5s to <1s
             * Only issue is that only the skeleton and top windows display 
-              immidately, the user-stats window loads after 3s
+              immediately, the user-stats window loads after 3s
 
 """
 
