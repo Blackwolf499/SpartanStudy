@@ -15,7 +15,7 @@ from pyfiglet import figlet_format
 Project SpartanStudy
 
 Started: [10/2/2022]
-This project was developed by Kirwin Webb
+This project was developed by BlackWolf
 
 For additonal details read the README.md
 
